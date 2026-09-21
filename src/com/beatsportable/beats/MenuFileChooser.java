@@ -23,6 +23,7 @@ public class MenuFileChooser extends ListActivity {
 	
 	// Show files
 	private String shortDirName(String s) {
+		if (s == null || s.length() == 0) return s;
 		String stripped = s;
 		// "[name] song"
 		if (s.charAt(0) == '[' && s.indexOf(']') != -1 && s.indexOf(']') < s.length() - 1) {
@@ -69,6 +70,14 @@ public class MenuFileChooser extends ListActivity {
 		setTitle(dir.getAbsolutePath());
 		// Get lists
 		File[] l = dir.listFiles();
+		if (l == null) {
+			Tools.toast(
+					Tools.getString(R.string.MenuFilechooser_list_error) +
+					dir.getPath() +
+					Tools.getString(R.string.Tools_permissions_error)
+					);
+			return;
+		}
 		ArrayList<MenuFileItem> dl = new ArrayList<MenuFileItem>();
 		ArrayList<MenuFileItem> fl = new ArrayList<MenuFileItem>(); 
 		
@@ -147,6 +156,11 @@ public class MenuFileChooser extends ListActivity {
 					}
 				}
 			}
+		}
+		if (cwd == null) {
+			Tools.toast(Tools.getString(R.string.MenuFilechooser_list_error));
+			finish();
+			return;
 		}
 		ToolsTracker.data("Opened file browser", "cwd", cwd.getAbsolutePath());
 		refresh();

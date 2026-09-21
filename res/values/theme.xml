@@ -1,5 +1,57 @@
 <resources>
-    <style name="Theme.NoBackground" parent="android:Theme">
+    <style name="Theme.PocketArrows" parent="android:Theme.Material">
+        <item name="android:colorBackground">#FF121212</item>
+        <item name="android:windowBackground">#FF121212</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFFFF</item>
+        <item name="android:textColorSecondary">#FFDDDDDD</item>
+        <item name="android:textColorHint">#FFBBBBBB</item>
+        <item name="android:editTextColor">#FFFFFFFF</item>
+        <item name="android:colorAccent">#FFFFCC33</item>
+        <item name="android:colorControlActivated">#FFFFCC33</item>
+        <item name="android:colorControlNormal">#FFCCCCCC</item>
+        <item name="android:editTextStyle">@style/Theme.PocketArrows.EditText</item>
+        <item name="android:alertDialogTheme">@style/Theme.PocketArrows.Dialog</item>
+        <item name="android:dialogTheme">@style/Theme.PocketArrows.Dialog</item>
+        <item name="android:listSeparatorTextViewStyle">@style/Theme.PocketArrows.Category</item>
+    </style>
+
+    <style name="Theme.PocketArrows.NoTitle" parent="Theme.PocketArrows">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+    </style>
+
+    <style name="Theme.PocketArrows.Dialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:colorBackground">#FF2A2A2A</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textColorPrimary">#FFFFFFFF</item>
+        <item name="android:textColorSecondary">#FFEEEEEE</item>
+        <item name="android:textColorHint">#FFBBBBBB</item>
+        <item name="android:editTextColor">#FFFFFFFF</item>
+        <item name="android:colorAccent">#FFFFCC33</item>
+        <item name="android:colorControlActivated">#FFFFCC33</item>
+        <item name="android:editTextStyle">@style/Theme.PocketArrows.EditText</item>
+        <item name="android:buttonBarButtonStyle">@style/Theme.PocketArrows.DialogButton</item>
+    </style>
+
+    <style name="Theme.PocketArrows.EditText" parent="android:Widget.Material.EditText">
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textColorHint">#FFBBBBBB</item>
+        <item name="android:textColorHighlight">#66FFCC33</item>
+    </style>
+
+    <style name="Theme.PocketArrows.DialogButton" parent="android:Widget.Material.Button.Borderless">
+        <item name="android:textColor">#FFFFFFFF</item>
+    </style>
+
+    <style name="Theme.PocketArrows.Category" parent="android:Widget.Material.TextView">
+        <item name="android:textColor">#FFFFCC33</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
+    <style name="Theme.NoBackground" parent="Theme.PocketArrows">
         <item name="android:windowBackground">@null</item>
     </style>
 </resources>

@@ -92,6 +92,7 @@
 		<item>50%</item>
 		<item>25%</item>
 		<item>10%</item>
+		<item>0%</item>
 	</string-array>
 	<string-array name="backgroundBrightnessValues">
 		<item>100</item>
@@ -99,6 +100,7 @@
 		<item>50</item>
 		<item>25</item>
 		<item>10</item>
+		<item>0</item>
 	</string-array>
 	
 	<string-array name="orientationValues">

@@ -91,8 +91,62 @@ public class Tools {
 		res = c.getResources();
 		settings = PreferenceManager.getDefaultSharedPreferences(c);
 		editor = settings.edit();
+		migrateTogglePrefsToBoolean();
+		applyPocketArrowsDefaultsIfNeeded();
 		updateGameMode();
 		ToolsTracker.setupTracker();
+	}
+
+	private static void applyPocketArrowsDefaultsIfNeeded() {
+		if (settings.getBoolean("paDefaultsV1", false)) return;
+		editor.putString(res.getString(R.string.accuracyLevel), res.getString(R.string.accuracyLevelDefault));
+		editor.putString(res.getString(R.string.speedMultiplier), res.getString(R.string.speedMultiplierDefault));
+		editor.putString(res.getString(R.string.tapboxFading), res.getString(R.string.tapboxFadingDefault));
+		editor.putString(res.getString(R.string.vibrateTap), res.getString(R.string.vibrateTapDefault));
+		editor.putString(res.getString(R.string.vibrateHold), res.getString(R.string.vibrateHoldDefault));
+		editor.putString(res.getString(R.string.vibrateMiss), res.getString(R.string.vibrateMissDefault));
+		editor.putString(res.getString(R.string.vibrateTouchSense), res.getString(R.string.vibrateTouchSenseDefault));
+		editor.putBoolean(res.getString(R.string.additionalVibrations), false);
+		editor.putBoolean(res.getString(R.string.vibrateTouchSense), false);
+		editor.putBoolean("paDefaultsV1", true);
+		editor.commit();
+	}
+
+	private static final int[] TOGGLE_PREF_KEYS = {
+		R.string.autoPlay, R.string.dark, R.string.holds, R.string.jumps,
+		R.string.fullscreen, R.string.showFPS, R.string.screenshotMode,
+		R.string.backgroundShow, R.string.backgroundSong, R.string.backgroundFiltering,
+		R.string.additionalVibrations, R.string.vibrateTouchSense, R.string.showPercent,
+		R.string.autoStart, R.string.useShortDirNames, R.string.stepfileFolderCheck,
+		R.string.installSamples, R.string.debugTime, R.string.debugLogCat, R.string.debugTapbox,
+		R.string.resetHighScores, R.string.resetSettings,
+		R.string.betaNotes, R.string.App_version
+	};
+
+	private static void migrateTogglePrefsToBoolean() {
+		boolean changed = false;
+		for (int i = 0; i < TOGGLE_PREF_KEYS.length; i++) {
+			String k = res.getString(TOGGLE_PREF_KEYS[i]);
+			try {
+				settings.getBoolean(k, false);
+			} catch (ClassCastException e) {
+				boolean v = "1".equals(settings.getString(k, "0"));
+				editor.remove(k);
+				editor.putBoolean(k, v);
+				changed = true;
+			}
+		}
+		if (!settings.getBoolean("paDefaultsV2", false)) {
+			editor.putBoolean(res.getString(R.string.jumps), true);
+			editor.putBoolean("paDefaultsV2", true);
+			changed = true;
+		}
+		if (!settings.getBoolean("paDefaultsV3", false)) {
+			editor.putString(res.getString(R.string.tapboxOverlap), res.getString(R.string.tapboxOverlapDefault));
+			editor.putBoolean("paDefaultsV3", true);
+			changed = true;
+		}
+		if (changed) editor.commit();
 	}
 	
 	public static void updateGameMode() {
@@ -123,10 +177,7 @@ public class Tools {
 		screen_w = display.getWidth();
 		screen_h = display.getHeight();
 		screen_s = (screen_h > screen_w) ? screen_w : screen_h;
-		if (!settings.getString(
-				res.getString(R.string.fullscreen),
-				res.getString(R.string.fullscreenDefault)
-				).equals("1")) {
+		if (!getBooleanSetting(R.string.fullscreen, R.string.fullscreenDefault)) {
 			screen_h -= statusBarHeight;
 		}
 		int screen_size = c.getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
@@ -249,7 +300,24 @@ public class Tools {
 	}
 	
 	public static boolean getBooleanSetting(int key, int defValue) {
-		return settings.getString(res.getString(key), res.getString(defValue)).equals("1");
+		String k = res.getString(key);
+		boolean def = res.getString(defValue).equals("1");
+		try {
+			return settings.getBoolean(k, def);
+		} catch (ClassCastException e) {
+			try {
+				return settings.getString(k, def ? "1" : "0").equals("1");
+			} catch (ClassCastException e2) {
+				return def;
+			}
+		}
+	}
+
+	public static void putBooleanSetting(int key, boolean value) {
+		String k = res.getString(key);
+		editor.remove(k);
+		editor.putBoolean(k, value);
+		editor.commit();
 	}
 
 	public static float getFloatSetting(int key, int defValue, float min, float max) {
@@ -287,7 +355,8 @@ public class Tools {
 	public static void resetSettings() {
 		editor.clear();
 		editor.commit();
-		editor.putString(res.getString(R.string.resetSettings), "0");
+		editor.putBoolean(res.getString(R.string.resetSettings), false);
+		editor.commit();
 	}
 	
 	public static String getString(int id) {
@@ -352,7 +421,7 @@ public class Tools {
 		) {
 		if (c == null) return;
 		
-		AlertDialog.Builder alertBuilder = new AlertDialog.Builder(c);
+		AlertDialog.Builder alertBuilder = new AlertDialog.Builder(c, R.style.Theme_PocketArrows_Dialog);
 		alertBuilder.setCancelable(cancelable);
 		alertBuilder.setTitle(title);
 		alertBuilder.setIcon(icon);

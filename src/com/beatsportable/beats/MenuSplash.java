@@ -67,6 +67,11 @@ public class MenuSplash extends Activity {
 				}
 			});
 			video.start();
+			video.postDelayed(new Runnable() {
+				public void run() {
+					finishSplash();
+				}
+			}, 500);
 		} catch (Exception e) {
 			showFallbackThenContinue(fallback);
 		}
@@ -79,7 +84,7 @@ public class MenuSplash extends Activity {
 			public void run() {
 				finishSplash();
 			}
-		}, 1800);
+		}, 500);
 	}
 
 	private void finishSplash() {

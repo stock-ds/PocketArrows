@@ -132,12 +132,12 @@ public class MenuHome extends Activity {
 				// build: repopulate the bundled sample pack in the new public folder.
 				if (!Tools.getBooleanSetting(R.string.publicStorageMigrated, R.string.publicStorageMigratedDefault)) {
 					Tools.putSetting(R.string.publicStorageMigrated, "1");
-					Tools.putSetting(R.string.installSamples, "1");
+					Tools.putBooleanSetting(R.string.installSamples, true);
 				}
 				// Install the sample pack on first run (or after the migration above).
 				if (Tools.getBooleanSetting(R.string.installSamples, R.string.installSamplesDefault)) {
 					Tools.installSampleSongs(this);
-					Tools.putSetting(R.string.installSamples, "0");
+					Tools.putBooleanSetting(R.string.installSamples, false);
 				}
 			}
 		} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -148,7 +148,7 @@ public class MenuHome extends Activity {
 	private void promptForAllFilesAccess() {
 		if (allFilesAccessAsked) return; // only ask once per session
 		allFilesAccessAsked = true;
-		new AlertDialog.Builder(this)
+		new AlertDialog.Builder(this, R.style.Theme_PocketArrows_Dialog)
 			.setTitle("Allow access to songs folder")
 		.setMessage("To add your own songs, PocketArrows needs \"All files access\". "
 			+ "This lets it use the Beats folder on your internal storage "
@@ -271,22 +271,10 @@ Tools.toast("Please enable 'All files access' for PocketArrows in Settings > App
 		}
 		*/
 		
-		// Background image
-		String backgroundPathNew = Tools.getBackgroundRes();
-		if (!backgroundPath.equals(backgroundPathNew)) {
-			backgroundPath = backgroundPathNew;
-			ImageView bg = (ImageView) findViewById(R.id.bg);
-			try {
-				Bitmap newBackground = BitmapFactory.decodeFile(backgroundPath);
-				if (newBackground != null) {
-					bg.setImageBitmap(newBackground);
-				}
-			} catch (Throwable t) {
-				System.gc();
-				ToolsTracker.error("MenuHome.updateLayout", t, "");
-				Tools.toast_long(Tools.getString(R.string.MenuHome_background_image_load_fail));
-			}
-			System.gc();
+		ImageView bg = (ImageView) findViewById(R.id.bg);
+		if (bg != null) {
+			bg.setImageDrawable(null);
+			bg.setBackgroundColor(Color.BLACK);
 		}
 	}
 	
@@ -329,29 +317,29 @@ Tools.toast("Please enable 'All files access' for PocketArrows in Settings > App
 			tv.setTypeface(tf);
 		}
 		tv.setTextSize(textSize);
-		tv.setTextColor(Color.BLACK);
-		tv.setShadowLayer(5f, 0, 0, Color.WHITE);
+		tv.setTextColor(Color.WHITE);
+		tv.setShadowLayer(6f, 0, 0, Color.BLACK);
 		tv.setGravity(Gravity.CENTER);
 		// We do this instead of ColorStateList since ColorStateList doesn't deal with shadows
 		tv.setOnFocusChangeListener(new OnFocusChangeListener() {
 			public void onFocusChange(View v, boolean hasFocus) {
 				if (hasFocus) {
-					tv.setTextColor(Color.WHITE);
+					tv.setTextColor(Color.YELLOW);
 					tv.setShadowLayer(9f, 0, 0, Color.BLACK);
 				} else {
-					tv.setTextColor(Color.BLACK);
-					tv.setShadowLayer(7f, 0, 0, Color.WHITE);
+					tv.setTextColor(Color.WHITE);
+					tv.setShadowLayer(6f, 0, 0, Color.BLACK);
 				}
 			}
 		});
 		tv.setOnTouchListener(new OnTouchListener() {
 			public boolean onTouch(View v, MotionEvent e) {
 				if (e.getAction() == MotionEvent.ACTION_DOWN) {
-					tv.setTextColor(Color.WHITE);
+					tv.setTextColor(Color.YELLOW);
 					tv.setShadowLayer(9f, 0, 0, Color.BLACK);
 				} else if (e.getAction() == MotionEvent.ACTION_UP) {
-					tv.setTextColor(Color.BLACK);
-					tv.setShadowLayer(7f, 0, 0, Color.WHITE);
+					tv.setTextColor(Color.WHITE);
+					tv.setShadowLayer(6f, 0, 0, Color.BLACK);
 				}
 				return false;
 			}
@@ -635,10 +623,8 @@ Tools.toast("Please enable 'All files access' for PocketArrows in Settings > App
 	}
 	*/
 	private void nextAutoPlay() {
-		int autoPlay = Integer.parseInt(Tools.getSetting(R.string.autoPlay, R.string.autoPlayDefault));
-		autoPlay++;
-		if (autoPlay > 1) autoPlay = 0;
-		Tools.putSetting(R.string.autoPlay, Integer.toString(autoPlay));
+		boolean autoPlay = Tools.getBooleanSetting(R.string.autoPlay, R.string.autoPlayDefault);
+		Tools.putBooleanSetting(R.string.autoPlay, !autoPlay);
 		updateAutoPlay();
 	}
 	

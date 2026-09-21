@@ -146,6 +146,7 @@ public class GUIFallingObjectSpace implements Iterable<GUIFallingObject> {
 					case TAP_NOTE:
 						o = new GUIFallingArrow(currentNote); 
 						break;
+					case ROLL:
 					case HOLD_START:
 						if (!ALLOW_HOLDS) break;
 						GUIFallingHold h = new GUIFallingHold(currentNote); 

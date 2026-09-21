@@ -1,9 +1,13 @@
 package com.beatsportable.beats;
 
+import com.beatsportable.beats.DataNote.NoteType;
 import com.beatsportable.beats.GUIScore.AccuracyTypes;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Path.Direction;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Region.Op;
 
 public class GUIFallingHold extends GUIFallingObject {
@@ -32,11 +36,18 @@ public class GUIFallingHold extends GUIFallingObject {
 	private boolean hasBeenHit = false;
 	private boolean ok_override = false; // set to true if we're close enough to the end to count an ok
 	public boolean hasStartedVibrating = false;
+	public boolean isRoll = false;
+	private static Paint rollPaint;
 	
 	GUIFallingHold(DataNote n) {
 		super(n, n.fraction, n.column, n.time, n.time + MAX_HOLD_MS);
 		original_starttime = n.time;
 		clicked = false;
+		isRoll = n.noteType == NoteType.ROLL;
+		if (isRoll && rollPaint == null) {
+			rollPaint = new Paint();
+			rollPaint.setColorFilter(new PorterDuffColorFilter(0xFFCC66FF, PorterDuff.Mode.MULTIPLY));
+		}
 	}
 
 	//public int fraction() { return fraction; }
@@ -90,6 +101,7 @@ public class GUIFallingHold extends GUIFallingObject {
 			canvas.clipRect(rect_left, hold_rect_top, rect_right, hold_rect_bottom);
 		}
 
+		Paint bodyPaint = isRoll ? rollPaint : null;
 		//need to swap comparison direction based on motion direction, hence xor
 		for (int y = hold_draw_start; (y <= hold_draw_end) ^ fallingDown; y += hold_draw_add) {
 			canvas.drawBitmap(
@@ -97,7 +109,7 @@ public class GUIFallingHold extends GUIFallingObject {
 							holdRsrc(mode, false),
 							Tools.button_w, holdimg_h
 							),
-					rect_left, y, null);
+					rect_left, y, bodyPaint);
 		}
 
 		canvas.restore();
@@ -108,7 +120,7 @@ public class GUIFallingHold extends GUIFallingObject {
 						holdRsrc(mode, true),
 						Tools.button_w, Tools.button_h
 						),
-				rect_left, end_rect_top, null
+				rect_left, end_rect_top, bodyPaint
 				);
 		
 		//start arrow (bottom)
@@ -117,7 +129,7 @@ public class GUIFallingHold extends GUIFallingObject {
 						GUINoteImage.rsrc(pitch, fraction, clicked),
 						Tools.button_w, Tools.button_h
 						), 
-				rect_left, start_rect_top, null
+				rect_left, start_rect_top, bodyPaint
 				);
 		
 		//debug
@@ -161,7 +173,8 @@ public class GUIFallingHold extends GUIFallingObject {
 
 	@Override
 	public void onHold(int currentTime, GUIScore score) {
-		start_time = currentTime;
+		// Rolls must be mashed; holding still does not keep them alive.
+		if (!isRoll) start_time = currentTime;
 	}
 	
 	@Override

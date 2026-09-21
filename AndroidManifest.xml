@@ -16,7 +16,8 @@
 		android:hardwareAccelerated="true"
 		android:icon="@drawable/icon"
 		android:label="@string/App_name"
-		android:description="@string/App_description">
+		android:description="@string/App_description"
+		android:theme="@style/Theme.PocketArrows">
 		<activity
 			android:name=".MenuSplash"
 			android:exported="true"
@@ -28,7 +29,8 @@
 		</activity>
 		<activity
 			android:name=".MenuHome"
-			android:exported="false"/>
+			android:exported="false"
+			android:theme="@style/Theme.PocketArrows.NoTitle"/>
 		<activity
 			android:name=".ToolsDownloader"
 			android:configChanges="orientation|keyboardHidden|screenSize"

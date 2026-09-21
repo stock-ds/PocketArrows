@@ -135,9 +135,10 @@ public class SongSelectInfo {
 		}
 		if (chosen == null) return;
 
-		info.noteCount = countNotes(chosen.getNotesData());
+		boolean dwi = Tools.isDWIFile(stepfile.getName());
+		info.noteCount = countNotes(chosen.getNotesData(), dwi);
 		info.difficultyMeter = chosen.getDifficultyMeter();
-		float durationSec = estimateDurationSec(dp.df, chosen);
+		float durationSec = estimateDurationSec(dp.df, chosen, dwi);
 		info.nps = (durationSec > 0.5f) ? (info.noteCount / durationSec) : 0f;
 
 		String md5 = dp.df.md5hash + chosen.getDifficultyMeter();
@@ -154,32 +155,91 @@ public class SongSelectInfo {
 		}
 	}
 
-	private static int countNotes(String notesData) {
+	private static int countNotes(String notesData, boolean dwi) {
 		if (notesData == null) return 0;
+		if (dwi) return countDwiNotes(notesData);
 		int count = 0;
-		for (int i = 0; i < notesData.length(); i++) {
-			char c = notesData.charAt(i);
-			if (c == '1' || c == '2' || c == '4') count++;
+		String[] lines = notesData.split("\n");
+		for (int li = 0; li < lines.length; li++) {
+			String line = lines[li].trim();
+			if (line.length() == 0 || line.charAt(0) == '/' || line.charAt(0) == ',') continue;
+			for (int i = 0; i < line.length(); i++) {
+				char c = line.charAt(i);
+				if (c == '1' || c == '2' || c == '4') count++;
+			}
 		}
 		return count;
 	}
 
-	private static float estimateDurationSec(DataFile df, DataNotesData nd) {
+	private static int countDwiNotes(String notes) {
+		int count = 0;
+		for (int i = 0; i < notes.length(); i++) {
+			char c = notes.charAt(i);
+			switch (c) {
+				case '2': case '4': case '6': case '8':
+					count++; break;
+				case '1': case '3': case '7': case '9': case 'A': case 'B':
+					count += 2; break;
+				default: break;
+			}
+		}
+		return count;
+	}
+
+	private static float estimateDurationSec(DataFile df, DataNotesData nd, boolean dwi) {
 		String notes = nd.getNotesData();
 		if (notes == null || notes.length() == 0) return 0f;
-		int measures = 1;
-		for (int i = 0; i < notes.length(); i++) {
-			if (notes.charAt(i) == ',') measures++;
-		}
 		float bpm = 120f;
 		try {
 			bpm = df.getBPM(0f);
 			if (bpm <= 1f) bpm = 120f;
 		} catch (Exception e) {}
-		float duration = measures * 4f * 60f / bpm;
-		float offsetSec = df.getOffset() / 1000f;
-		if (offsetSec < 0) duration -= offsetSec;
+		float duration;
+		if (dwi) {
+			duration = estimateDwiDurationSec(notes, bpm);
+		} else {
+			int measures = 0;
+			String[] lines = notes.split("\n");
+			boolean sawRow = false;
+			for (int li = 0; li < lines.length; li++) {
+				String line = lines[li].trim();
+				if (line.length() == 0 || line.charAt(0) == '/') continue;
+				if (line.charAt(0) == ',') {
+					measures++;
+					sawRow = false;
+				} else {
+					sawRow = true;
+				}
+			}
+			if (sawRow) measures++;
+			if (measures < 1) measures = 1;
+			duration = measures * 4f * 60f / bpm;
+		}
 		return duration;
+	}
+
+	private static float estimateDwiDurationSec(String notes, float bpm) {
+		float beatUnit = 1f / 8f;
+		float beats = 0f;
+		for (int i = 0; i < notes.length(); i++) {
+			char c = notes.charAt(i);
+			switch (c) {
+				case '(': beatUnit = 1f / 16f; break;
+				case '[': beatUnit = 1f / 24f; break;
+				case '{': beatUnit = 1f / 64f; break;
+				case '`': beatUnit = 1f / 192f; break;
+				case ')': case ']': case '}': case '\'':
+					beatUnit = 1f / 8f; break;
+				case '!': case '/': case '\n': case '\r': case ' ':
+					break;
+				default:
+					if ((c >= '0' && c <= '9') || c == 'A' || c == 'B') {
+						beats += beatUnit;
+					}
+					break;
+			}
+		}
+		return beats * 60f / bpm;
 	}
 
 	private static String findPackBanner(File dir, File[] files) {

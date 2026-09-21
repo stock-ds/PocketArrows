@@ -147,7 +147,12 @@ public class DataParserSM {
 				} else {
 					return NoteType.NO_NOTE;
 				}
-			case '4': return NoteType.ROLL;
+			case '4':
+				if (holds) {
+					return NoteType.ROLL;
+				} else {
+					return NoteType.TAP_NOTE;
+				}
 			case 'M': return NoteType.MINE;
 			case 'L': return NoteType.LIFT;
 			default: return NoteType.NO_NOTE;
@@ -185,9 +190,8 @@ public class DataParserSM {
 	}
 	
 	public static boolean isSupportedNoteType(NoteType nt) {
-		// TODO - Support mines and actual holds later
-		return (nt.equals(NoteType.TAP_NOTE) || nt.equals(NoteType.HOLD_START) || 
-				nt.equals(NoteType.HOLD_END));
+		return (nt.equals(NoteType.TAP_NOTE) || nt.equals(NoteType.HOLD_START) ||
+				nt.equals(NoteType.HOLD_END) || nt.equals(NoteType.ROLL));
 	}
 	
 	// Confusing hold logic but pretty much its to ensure that holds end when jump is on
@@ -225,7 +229,7 @@ public class DataParserSM {
 						coords = new float[4];
 						pitch = i;
 						fraction = parseFraction(lineIndex, lineCount);
-						if (nt.equals(NoteType.HOLD_START)) {
+						if (nt.equals(NoteType.HOLD_START) || nt.equals(NoteType.ROLL)) {
 							activeHolds.add(i);
 						} else if (nt.equals(NoteType.HOLD_END) && activeHolds.contains(i)) {
 							activeHolds.remove(activeHolds.indexOf(i));

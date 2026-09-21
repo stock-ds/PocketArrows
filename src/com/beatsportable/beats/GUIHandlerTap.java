@@ -505,7 +505,7 @@ public class GUIHandlerTap extends GUIHandler {
 			
 			object_held[pitch] = o; //todo: what if there's already a held object?	
 			
-			if (o.n.noteType.equals(DataNote.NoteType.HOLD_START)) {
+			if (o.n.noteType.equals(DataNote.NoteType.HOLD_START) || o.n.noteType.equals(DataNote.NoteType.ROLL)) {
 				// TODO - vibrate
 				try {
 					GUIFallingHold ho = (GUIFallingHold)o;
